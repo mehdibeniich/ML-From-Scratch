@@ -12,6 +12,15 @@ class TestLinearRegression(unittest.TestCase):
         model = LinearRegression(learning_rate=0.05, n_iterations=2_000).fit(X, y)
         np.testing.assert_allclose(model.predict([[5]])[0], 11.0, atol=0.05)
 
+    def test_training_loss_decreases(self):
+        X = np.array([[0], [1], [2], [3]], dtype=float)
+        y = 2 * X.reshape(-1) + 1
+
+        model = LinearRegression(learning_rate=0.05, n_iterations=100)
+        model.fit(X, y)
+
+        self.assertLess(model.cost_history[-1], model.cost_history[0])
+
     def test_predict_before_fit_raises(self):
         with self.assertRaises(RuntimeError):
             LinearRegression().predict([[1]])
