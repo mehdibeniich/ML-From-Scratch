@@ -21,6 +21,21 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 
 A linear model trained with batch gradient descent. See `examples/linear_regression_demo.py` for a runnable example.
 
+### Logistic regression building block
+
+The `ml_from_scratch.logistic_regression` module provides a numerically stable `sigmoid()` function. It accepts scalars and NumPy arrays and maps values to the interval [0, 1].
+
+Example:
+
+```python
+import numpy as np
+from ml_from_scratch import sigmoid
+
+logits = np.array([-2.0, 0.0, 2.0])
+probabilities = sigmoid(logits)
+print(probabilities)
+```
+
 ### Regression evaluation metrics
 
 The `ml_from_scratch.metrics` module provides:
