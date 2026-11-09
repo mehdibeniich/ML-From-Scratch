@@ -63,6 +63,20 @@ class TestBinaryCrossEntropyWithLogits(unittest.TestCase):
         with self.assertRaises(ValueError):
             binary_cross_entropy_with_logits([0, 1], [0.2])
 
+    def test_rejects_empty_inputs(self):
+        with self.assertRaises(ValueError):
+            binary_cross_entropy_with_logits([], [])
+        with self.assertRaises(ValueError):
+            binary_cross_entropy_with_logits([1], [])
+
+    def test_rejects_non_finite_inputs(self):
+        for invalid in (np.nan, np.inf, -np.inf):
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ValueError):
+                    binary_cross_entropy_with_logits([1.0], [invalid])
+                with self.assertRaises(ValueError):
+                    binary_cross_entropy_with_logits([invalid], [0.0])
+
     def test_rejects_invalid_targets_and_reduction(self):
         with self.assertRaises(ValueError):
             binary_cross_entropy_with_logits([2], [0.2])
