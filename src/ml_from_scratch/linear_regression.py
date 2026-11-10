@@ -26,6 +26,8 @@ class LinearRegression:
             raise ValueError("X and y must contain the same number of samples")
         if X.shape[0] == 0:
             raise ValueError("training data cannot be empty")
+        if not np.all(np.isfinite(X)) or not np.all(np.isfinite(y)):
+            raise ValueError("X and y must contain only finite values")
 
         n_samples, n_features = X.shape
         self.weights = np.zeros(n_features, dtype=float)
@@ -49,4 +51,6 @@ class LinearRegression:
             X = X.reshape(1, -1)
         if X.ndim != 2 or X.shape[1] != self.weights.shape[0]:
             raise ValueError("X must be 2D with the same number of features used in fit")
+        if not np.all(np.isfinite(X)):
+            raise ValueError("X must contain only finite values")
         return X @ self.weights + self.bias

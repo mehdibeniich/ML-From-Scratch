@@ -29,6 +29,21 @@ class TestLinearRegression(unittest.TestCase):
         with self.assertRaises(ValueError):
             LinearRegression().fit([[1], [2]], [1])
 
+    def test_non_finite_training_values_raise(self):
+        for invalid in (np.nan, np.inf, -np.inf):
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ValueError):
+                    LinearRegression().fit([[1.0], [invalid]], [1.0, 2.0])
+                with self.assertRaises(ValueError):
+                    LinearRegression().fit([[1.0], [2.0]], [1.0, invalid])
+
+    def test_non_finite_prediction_values_raise(self):
+        model = LinearRegression().fit([[0.0], [1.0]], [0.0, 1.0])
+        for invalid in (np.nan, np.inf, -np.inf):
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ValueError):
+                    model.predict([[invalid]])
+
 
 if __name__ == "__main__":
     unittest.main()
