@@ -7,10 +7,14 @@ class LinearRegression:
     """Fit y = Xw + b using batch gradient descent."""
 
     def __init__(self, learning_rate: float = 0.01, n_iterations: int = 1_000):
-        if learning_rate <= 0:
-            raise ValueError("learning_rate must be positive")
-        if n_iterations < 1:
-            raise ValueError("n_iterations must be at least 1")
+        if not np.isfinite(learning_rate) or learning_rate <= 0:
+            raise ValueError("learning_rate must be a finite positive number")
+        if (
+            isinstance(n_iterations, (bool, np.bool_))
+            or not isinstance(n_iterations, (int, np.integer))
+            or n_iterations < 1
+        ):
+            raise ValueError("n_iterations must be a positive integer")
         self.learning_rate = learning_rate
         self.n_iterations = n_iterations
         self.weights = None
