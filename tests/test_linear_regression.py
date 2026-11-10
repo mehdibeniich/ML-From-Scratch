@@ -44,6 +44,22 @@ class TestLinearRegression(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     model.predict([[invalid]])
 
+    def test_non_finite_learning_rates_raise(self):
+        for invalid in (np.nan, np.inf, -np.inf, 0.0, -0.01):
+            with self.subTest(learning_rate=invalid):
+                with self.assertRaises(ValueError):
+                    LinearRegression(learning_rate=invalid)
+
+    def test_iteration_count_must_be_a_positive_integer(self):
+        for invalid in (0, -1, 1.5, True):
+            with self.subTest(n_iterations=invalid):
+                with self.assertRaises(ValueError):
+                    LinearRegression(n_iterations=invalid)
+
+    def test_numpy_integer_iteration_count_is_supported(self):
+        model = LinearRegression(n_iterations=np.int64(2))
+        self.assertEqual(model.n_iterations, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
