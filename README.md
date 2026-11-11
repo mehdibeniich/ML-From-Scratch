@@ -26,7 +26,7 @@ A linear model trained with batch gradient descent. See **examples/linear_regres
 The **ml_from_scratch.logistic_regression** module currently provides:
 
 - **sigmoid(z):** numerically stable conversion of logits to probabilities.
-- **binary_cross_entropy_with_logits(y_true, logits, reduction="mean"):** numerically stable binary cross-entropy without explicitly calculating probabilities first. The reduction argument supports "none", "sum", and "mean".
+- **binary_cross_entropy_with_logits(y_true, logits, reduction="mean"):** numerically stable binary cross-entropy without explicitly calculating probabilities first. The reduction argument supports "none", "sum", and "mean". Targets must be in [0, 1], so both hard labels (0/1) and soft labels (probabilities) are supported.
 
 Example:
 

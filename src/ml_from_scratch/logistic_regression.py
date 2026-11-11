@@ -18,7 +18,8 @@ def binary_cross_entropy_with_logits(y_true, logits, reduction="mean"):
     """Compute binary cross-entropy directly from logits.
 
     Args:
-        y_true: Binary targets (0 or 1), with the same shape as logits.
+        y_true: Targets in [0, 1], with the same shape as logits. Both hard
+            labels (0 or 1) and soft labels (probabilities) are supported.
         logits: Raw, unscaled model scores.
         reduction: "none" for element-wise losses, "sum" for their sum,
             or "mean" for their average.

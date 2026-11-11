@@ -59,6 +59,17 @@ class TestBinaryCrossEntropyWithLogits(unittest.TestCase):
         result = binary_cross_entropy_with_logits(1, 0.5)
         self.assertIsInstance(result, float)
 
+    def test_supports_soft_targets(self):
+        targets = np.array([0.25, 0.75])
+        logits = np.array([-1.0, 2.0])
+        expected = np.logaddexp(0.0, logits) - targets * logits
+
+        losses = binary_cross_entropy_with_logits(targets, logits, reduction="none")
+        np.testing.assert_allclose(losses, expected)
+        self.assertAlmostEqual(
+            binary_cross_entropy_with_logits(targets, logits), float(np.mean(expected))
+        )
+
     def test_rejects_mismatched_shapes(self):
         with self.assertRaises(ValueError):
             binary_cross_entropy_with_logits([0, 1], [0.2])
