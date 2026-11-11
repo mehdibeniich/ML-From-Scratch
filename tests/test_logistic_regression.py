@@ -2,7 +2,11 @@ import unittest
 
 import numpy as np
 
-from ml_from_scratch import binary_cross_entropy_with_logits, sigmoid
+from ml_from_scratch import (
+    LogisticRegression,
+    binary_cross_entropy_with_logits,
+    sigmoid,
+)
 
 
 class TestSigmoid(unittest.TestCase):
@@ -63,7 +67,6 @@ class TestBinaryCrossEntropyWithLogits(unittest.TestCase):
         targets = np.array([0.25, 0.75])
         logits = np.array([-1.0, 2.0])
         expected = np.logaddexp(0.0, logits) - targets * logits
-
         losses = binary_cross_entropy_with_logits(targets, logits, reduction="none")
         np.testing.assert_allclose(losses, expected)
         self.assertAlmostEqual(
@@ -93,6 +96,90 @@ class TestBinaryCrossEntropyWithLogits(unittest.TestCase):
             binary_cross_entropy_with_logits([2], [0.2])
         with self.assertRaises(ValueError):
             binary_cross_entropy_with_logits([1], [0.2], reduction="median")
+
+
+class TestLogisticRegression(unittest.TestCase):
+    def setUp(self):
+        self.X = np.array([[-2.0], [-1.0], [1.0], [2.0]])
+        self.y = np.array([0, 0, 1, 1])
+
+    def test_learns_linearly_separable_data(self):
+        model = LogisticRegression(learning_rate=0.1, n_iterations=1_000)
+        self.assertIs(model.fit(self.X, self.y), model)
+        np.testing.assert_array_equal(model.predict(self.X), self.y)
+        self.assertLess(model.cost_history[-1], model.cost_history[0])
+
+    def test_predict_proba_returns_two_normalized_columns(self):
+        model = LogisticRegression(learning_rate=0.1, n_iterations=1_000).fit(
+            self.X, self.y
+        )
+        probabilities = model.predict_proba(self.X)
+        self.assertEqual(probabilities.shape, (4, 2))
+        np.testing.assert_allclose(np.sum(probabilities, axis=1), 1.0)
+        self.assertTrue(np.all((probabilities >= 0.0) & (probabilities <= 1.0)))
+
+    def test_predict_accepts_a_single_feature_vector(self):
+        model = LogisticRegression(learning_rate=0.1, n_iterations=1_000).fit(
+            self.X, self.y
+        )
+        np.testing.assert_array_equal(model.predict(np.array([-3.0])), [0])
+
+    def test_prediction_before_fit_raises(self):
+        model = LogisticRegression()
+        with self.assertRaises(RuntimeError):
+            model.predict(self.X)
+        with self.assertRaises(RuntimeError):
+            model.predict_proba(self.X)
+
+    def test_rejects_invalid_training_data(self):
+        model = LogisticRegression()
+        with self.assertRaises(ValueError):
+            model.fit([1.0, 2.0], self.y)
+        with self.assertRaises(ValueError):
+            model.fit(self.X, [0, 1])
+        with self.assertRaises(ValueError):
+            model.fit(np.empty((0, 1)), [])
+        with self.assertRaises(ValueError):
+            model.fit(np.empty((4, 0)), self.y)
+
+    def test_rejects_non_finite_training_values(self):
+        for invalid in (np.nan, np.inf, -np.inf):
+            with self.subTest(invalid=invalid):
+                X = self.X.copy()
+                X[0, 0] = invalid
+                with self.assertRaises(ValueError):
+                    LogisticRegression().fit(X, self.y)
+                y = self.y.astype(float)
+                y[0] = invalid
+                with self.assertRaises(ValueError):
+                    LogisticRegression().fit(self.X, y)
+
+    def test_rejects_non_binary_or_single_class_targets(self):
+        with self.assertRaises(ValueError):
+            LogisticRegression().fit(self.X, [0, 0.5, 1, 1])
+        with self.assertRaises(ValueError):
+            LogisticRegression().fit(self.X, [1, 1, 1, 1])
+
+    def test_rejects_invalid_prediction_features(self):
+        model = LogisticRegression(learning_rate=0.1, n_iterations=100).fit(
+            self.X, self.y
+        )
+        with self.assertRaises(ValueError):
+            model.predict([[1.0, 2.0]])
+        with self.assertRaises(ValueError):
+            model.predict([[np.nan]])
+        with self.assertRaises(ValueError):
+            model.predict(np.empty((0, 1)))
+
+    def test_validates_hyperparameters(self):
+        for invalid in (0.0, -0.1, np.nan, np.inf, -np.inf):
+            with self.subTest(learning_rate=invalid):
+                with self.assertRaises(ValueError):
+                    LogisticRegression(learning_rate=invalid)
+        for invalid in (0, -1, 1.5, True):
+            with self.subTest(n_iterations=invalid):
+                with self.assertRaises(ValueError):
+                    LogisticRegression(n_iterations=invalid)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 ## Roadmap
 
 - [x] Linear regression with gradient descent
-- [ ] Logistic regression
+- [x] Logistic regression
 - [ ] Data preprocessing and feature scaling
 - [x] Regression evaluation metrics (MSE, MAE, and R²)
 - [ ] K-nearest neighbors
@@ -21,9 +21,34 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 
 A linear model trained with batch gradient descent. See **examples/linear_regression_demo.py** for a runnable example.
 
+### Logistic regression
+
+**LogisticRegression** is a binary classifier trained with batch gradient descent. It uses the stable sigmoid and binary cross-entropy utilities in **ml_from_scratch.logistic_regression**.
+
+- **fit(X, y):** learns weights and bias from a 2D feature array and binary labels (0 and 1).
+- **predict_proba(X):** returns two columns containing probabilities for classes 0 and 1.
+- **predict(X):** returns class labels using a 0.5 probability threshold.
+- **cost_history:** records the training loss after each iteration.
+
+Example:
+
+~~~python
+import numpy as np
+from ml_from_scratch import LogisticRegression
+
+X = np.array([[-2.0], [-1.0], [1.0], [2.0]])
+y = np.array([0, 0, 1, 1])
+
+model = LogisticRegression(learning_rate=0.1, n_iterations=1_000)
+model.fit(X, y)
+
+print(model.predict_proba([[1.5]]))
+print(model.predict([[1.5]]))
+~~~
+
 ### Logistic regression building blocks
 
-The **ml_from_scratch.logistic_regression** module currently provides:
+The **ml_from_scratch.logistic_regression** module also provides:
 
 - **sigmoid(z):** numerically stable conversion of logits to probabilities.
 - **binary_cross_entropy_with_logits(y_true, logits, reduction="mean"):** numerically stable binary cross-entropy without explicitly calculating probabilities first. The reduction argument supports "none", "sum", and "mean". Targets must be in [0, 1], so both hard labels (0/1) and soft labels (probabilities) are supported.
