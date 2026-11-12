@@ -25,7 +25,7 @@ A linear model trained with batch gradient descent. See **examples/linear_regres
 
 **LogisticRegression** is a binary classifier trained with batch gradient descent. It uses the stable sigmoid and binary cross-entropy utilities in **ml_from_scratch.logistic_regression**.
 
-- **fit(X, y):** learns weights and bias from a 2D feature array and binary labels (0 and 1).
+- **fit(X, y):** learns weights and bias from a 2D feature array and binary labels (0 and 1). If optimization diverges, it raises `FloatingPointError` without replacing a previously fitted model.
 - **predict_proba(X):** returns two columns containing probabilities for classes 0 and 1.
 - **predict(X):** returns class labels using a 0.5 probability threshold.
 - **cost_history:** records the training loss after each iteration.

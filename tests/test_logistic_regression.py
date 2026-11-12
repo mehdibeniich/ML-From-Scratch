@@ -109,6 +109,22 @@ class TestLogisticRegression(unittest.TestCase):
         np.testing.assert_array_equal(model.predict(self.X), self.y)
         self.assertLess(model.cost_history[-1], model.cost_history[0])
 
+    def test_failed_refit_preserves_previous_model(self):
+        model = LogisticRegression(learning_rate=0.1, n_iterations=1_000).fit(
+            self.X, self.y
+        )
+        weights_before = model.weights.copy()
+        bias_before = model.bias
+        cost_history_before = model.cost_history.copy()
+
+        with self.assertRaises(FloatingPointError):
+            model.fit([[-1e200], [1e200]], [0, 1])
+
+        np.testing.assert_array_equal(model.weights, weights_before)
+        self.assertEqual(model.bias, bias_before)
+        self.assertEqual(model.cost_history, cost_history_before)
+        np.testing.assert_array_equal(model.predict(self.X), self.y)
+
     def test_predict_proba_returns_two_normalized_columns(self):
         model = LogisticRegression(learning_rate=0.1, n_iterations=1_000).fit(
             self.X, self.y

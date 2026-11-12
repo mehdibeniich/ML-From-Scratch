@@ -77,7 +77,12 @@ class LogisticRegression:
         self.classes_ = np.array([0, 1], dtype=int)
 
     def fit(self, X, y):
-        """Fit the classifier and return this estimator."""
+        """Fit the classifier and return this estimator.
+
+        Raises:
+            FloatingPointError: If optimization diverges. Any previous fitted
+                parameters remain unchanged when this happens.
+        """
         X = np.asarray(X, dtype=float)
         y = np.asarray(y, dtype=float).reshape(-1)
 
@@ -95,20 +100,44 @@ class LogisticRegression:
             raise ValueError("y must contain both classes 0 and 1")
 
         n_samples, n_features = X.shape
-        self.weights = np.zeros(n_features, dtype=float)
-        self.bias = 0.0
-        self.cost_history = []
+        weights = np.zeros(n_features, dtype=float)
+        bias = 0.0
+        cost_history = []
 
-        for _ in range(self.n_iterations):
-            logits = X @ self.weights + self.bias
-            errors = sigmoid(logits) - y
-            self.weights -= self.learning_rate * (X.T @ errors) / n_samples
-            self.bias -= self.learning_rate * np.mean(errors)
+        # Keep the current fitted model intact unless every training step succeeds.
+        with np.errstate(over="ignore", invalid="ignore"):
+            for _ in range(self.n_iterations):
+                logits = X @ weights + bias
+                if not np.all(np.isfinite(logits)):
+                    raise FloatingPointError(
+                        "training diverged: non-finite logits encountered"
+                    )
 
-            updated_logits = X @ self.weights + self.bias
-            self.cost_history.append(
-                binary_cross_entropy_with_logits(y, updated_logits)
-            )
+                errors = sigmoid(logits) - y
+                weights -= self.learning_rate * (X.T @ errors) / n_samples
+                bias -= self.learning_rate * np.mean(errors)
+
+                if not np.all(np.isfinite(weights)) or not np.isfinite(bias):
+                    raise FloatingPointError(
+                        "training diverged: non-finite parameters encountered"
+                    )
+
+                updated_logits = X @ weights + bias
+                if not np.all(np.isfinite(updated_logits)):
+                    raise FloatingPointError(
+                        "training diverged: non-finite logits encountered"
+                    )
+
+                loss = binary_cross_entropy_with_logits(y, updated_logits)
+                if not np.isfinite(loss):
+                    raise FloatingPointError(
+                        "training diverged: non-finite loss encountered"
+                    )
+                cost_history.append(loss)
+
+        self.weights = weights
+        self.bias = float(bias)
+        self.cost_history = cost_history
         return self
 
     def _validated_features(self, X):
