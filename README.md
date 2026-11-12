@@ -10,7 +10,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 
 - [x] Linear regression with gradient descent
 - [x] Logistic regression
-- [ ] Data preprocessing and feature scaling
+- [x] Data preprocessing and feature scaling
 - [x] Regression evaluation metrics (MSE, MAE, and R²)
 - [ ] K-nearest neighbors
 - [ ] Decision trees
@@ -65,6 +65,34 @@ targets = np.array([0.0, 1.0, 1.0])
 loss = binary_cross_entropy_with_logits(targets, logits)
 print(probabilities)
 print(loss)
+~~~
+
+### Data preprocessing: StandardScaler
+
+**StandardScaler** learns each feature's mean and population standard deviation from training data, then applies `(X - mean_) / scale_` to new samples.
+
+- **fit(X):** learns the statistics from a non-empty, finite 2D training array.
+- **transform(X):** scales new data using the learned training statistics.
+- **fit_transform(X):** fits the scaler and transforms the same data.
+- Constant features use a scale of 1.0, so they transform to zeros instead of dividing by zero.
+
+Fit the scaler only on training data, then reuse it for validation or test data to avoid data leakage.
+
+Example:
+
+~~~python
+import numpy as np
+from ml_from_scratch import StandardScaler
+
+X_train = np.array([[1.0, 100.0], [2.0, 150.0], [3.0, 200.0]])
+X_test = np.array([[4.0, 250.0]])
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print(X_train_scaled)
+print(X_test_scaled)
 ~~~
 
 ### Regression evaluation metrics
