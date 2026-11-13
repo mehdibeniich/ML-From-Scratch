@@ -19,7 +19,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 
 ### Linear regression
 
-A linear model trained with batch gradient descent. See **examples/linear_regression_demo.py** for a runnable example.
+A linear model trained with batch gradient descent. See **examples/linear_regression_demo.py** for a runnable example. If optimization diverges, `fit()` raises `FloatingPointError` and preserves any previously fitted model.
 
 ### Logistic regression
 

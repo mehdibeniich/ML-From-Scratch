@@ -60,6 +60,23 @@ class TestLinearRegression(unittest.TestCase):
         model = LinearRegression(n_iterations=np.int64(2))
         self.assertEqual(model.n_iterations, 2)
 
+    def test_failed_refit_preserves_previous_model(self):
+        X = np.array([[0.0], [1.0], [2.0], [3.0]])
+        y = 2.0 * X.reshape(-1) + 1.0
+        model = LinearRegression(learning_rate=0.05, n_iterations=100).fit(X, y)
+        weights_before = model.weights.copy()
+        bias_before = model.bias
+        cost_history_before = model.cost_history.copy()
+        predictions_before = model.predict(X)
+
+        with self.assertRaises(FloatingPointError):
+            model.fit([[1e200], [2e200]], [1.0, 2.0])
+
+        np.testing.assert_array_equal(model.weights, weights_before)
+        self.assertEqual(model.bias, bias_before)
+        self.assertEqual(model.cost_history, cost_history_before)
+        np.testing.assert_array_equal(model.predict(X), predictions_before)
+
 
 if __name__ == "__main__":
     unittest.main()
