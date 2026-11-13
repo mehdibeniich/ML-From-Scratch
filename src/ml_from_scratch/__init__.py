@@ -1,5 +1,6 @@
 """Machine-learning algorithms implemented from scratch."""
 
+from .knn import KNeighborsClassifier
 from .linear_regression import LinearRegression
 from .logistic_regression import (
     LogisticRegression,
@@ -12,6 +13,7 @@ from .standard_scaler import StandardScaler
 __all__ = [
     "LinearRegression",
     "LogisticRegression",
+    "KNeighborsClassifier",
     "StandardScaler",
     "sigmoid",
     "binary_cross_entropy_with_logits",

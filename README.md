@@ -12,7 +12,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 - [x] Logistic regression
 - [x] Data preprocessing and feature scaling
 - [x] Regression evaluation metrics (MSE, MAE, and R²)
-- [ ] K-nearest neighbors
+- [x] K-nearest neighbors
 - [ ] Decision trees
 
 ## Implemented
@@ -93,6 +93,31 @@ X_test_scaled = scaler.transform(X_test)
 
 print(X_train_scaled)
 print(X_test_scaled)
+~~~
+
+### K-nearest neighbors
+
+**KNeighborsClassifier** predicts a class by majority vote among the `n_neighbors` closest training samples, using Euclidean distance.
+
+- **fit(X, y):** stores a finite 2D training feature array and its class labels.
+- **predict(X):** returns the majority-vote class. If vote counts tie, the closest tied neighbor decides.
+- **predict_proba(X):** returns vote proportions, with columns ordered by the sorted `classes_` attribute.
+- **n_neighbors:** must be a positive integer no larger than the number of training samples.
+
+Euclidean distance is sensitive to feature scale. Use **StandardScaler** when features have substantially different units or ranges.
+
+Example:
+
+~~~python
+from ml_from_scratch import KNeighborsClassifier
+
+X_train = [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]]
+y_train = ["low", "low", "low", "high", "high", "high"]
+
+model = KNeighborsClassifier(n_neighbors=3).fit(X_train, y_train)
+print(model.predict([[0.5], [4.5]]))
+print(model.predict_proba([[0.5], [4.5]]))
+print(model.classes_)  # probability-column order
 ~~~
 
 ### Regression evaluation metrics
