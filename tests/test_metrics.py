@@ -42,5 +42,13 @@ class TestRegressionMetrics(unittest.TestCase):
             r2_score([1, np.nan], [1, 2])
 
 
+    def test_overflowing_metric_calculations_raise(self):
+        with self.assertRaises(FloatingPointError):
+            mean_squared_error([1e200], [0.0])
+        with self.assertRaises(FloatingPointError):
+            mean_absolute_error([1e308], [-1e308])
+        with self.assertRaises(FloatingPointError):
+            r2_score([1e200, -1e200], [0.0, 0.0])
+
 if __name__ == "__main__":
     unittest.main()

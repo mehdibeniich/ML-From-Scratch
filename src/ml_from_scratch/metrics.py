@@ -1,4 +1,4 @@
-"""Regression metrics implemented with NumPy."""
+"""Regression metrics implemented with NumPy and overflow checks."""
 
 import numpy as np
 
@@ -18,16 +18,29 @@ def _validate_regression_inputs(y_true, y_pred):
     return y_true, y_pred
 
 
+def _finite_metric_result(value, metric_name):
+    """Return a finite metric value or explain that its calculation overflowed."""
+    if not np.isfinite(value):
+        raise FloatingPointError(
+            f"{metric_name} overflowed: non-finite result encountered"
+        )
+    return float(value)
+
+
 def mean_squared_error(y_true, y_pred):
     """Return the average squared difference between targets and predictions."""
     y_true, y_pred = _validate_regression_inputs(y_true, y_pred)
-    return float(np.mean((y_true - y_pred) ** 2))
+    with np.errstate(over="ignore", invalid="ignore"):
+        result = np.mean((y_true - y_pred) ** 2)
+    return _finite_metric_result(result, "mean squared error")
 
 
 def mean_absolute_error(y_true, y_pred):
     """Return the average absolute difference between targets and predictions."""
     y_true, y_pred = _validate_regression_inputs(y_true, y_pred)
-    return float(np.mean(np.abs(y_true - y_pred)))
+    with np.errstate(over="ignore", invalid="ignore"):
+        result = np.mean(np.abs(y_true - y_pred))
+    return _finite_metric_result(result, "mean absolute error")
 
 
 def r2_score(y_true, y_pred):
@@ -37,10 +50,18 @@ def r2_score(y_true, y_pred):
     """
     y_true, y_pred = _validate_regression_inputs(y_true, y_pred)
 
-    residual_sum_squares = float(np.sum((y_true - y_pred) ** 2))
-    total_sum_squares = float(np.sum((y_true - np.mean(y_true)) ** 2))
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        residual_sum_squares = np.sum((y_true - y_pred) ** 2)
+        total_sum_squares = np.sum((y_true - np.mean(y_true)) ** 2)
 
-    if total_sum_squares == 0.0:
-        return 1.0 if residual_sum_squares == 0.0 else 0.0
+        if not np.isfinite(residual_sum_squares) or not np.isfinite(total_sum_squares):
+            raise FloatingPointError(
+                "R2 score overflowed: non-finite intermediate result encountered"
+            )
 
-    return float(1.0 - residual_sum_squares / total_sum_squares)
+        if total_sum_squares == 0.0:
+            return 1.0 if residual_sum_squares == 0.0 else 0.0
+
+        result = 1.0 - residual_sum_squares / total_sum_squares
+
+    return _finite_metric_result(result, "R2 score")
