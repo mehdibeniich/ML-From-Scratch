@@ -85,4 +85,10 @@ class LinearRegression:
             raise ValueError("X must be 2D with the same number of features used in fit")
         if not np.all(np.isfinite(X)):
             raise ValueError("X must contain only finite values")
-        return X @ self.weights + self.bias
+        with np.errstate(over="ignore", invalid="ignore"):
+            predictions = X @ self.weights + self.bias
+        if not np.all(np.isfinite(predictions)):
+            raise FloatingPointError(
+                "prediction overflowed: non-finite values encountered"
+            )
+        return predictions
