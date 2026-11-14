@@ -60,6 +60,15 @@ class TestLinearRegression(unittest.TestCase):
         model = LinearRegression(n_iterations=np.int64(2))
         self.assertEqual(model.n_iterations, 2)
 
+    def test_prediction_overflow_raises_clear_error(self):
+        model = LinearRegression(learning_rate=0.01, n_iterations=1).fit(
+            [[1e75], [2e75]], [1.0, 2.0]
+        )
+        self.assertTrue(np.all(np.isfinite(model.weights)))
+
+        with self.assertRaisesRegex(FloatingPointError, "prediction overflowed"):
+            model.predict([[1e236]])
+
     def test_failed_refit_preserves_previous_model(self):
         X = np.array([[0.0], [1.0], [2.0], [3.0]])
         y = 2.0 * X.reshape(-1) + 1.0
