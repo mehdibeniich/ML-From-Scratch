@@ -46,9 +46,12 @@ def mean_absolute_error(y_true, y_pred):
 def r2_score(y_true, y_pred):
     """Return the coefficient of determination.
 
-    For a constant target, return 1.0 for perfect predictions and 0.0 otherwise.
+    Requires at least two samples. For a constant target, return 1.0 for
+    perfect predictions and 0.0 otherwise.
     """
     y_true, y_pred = _validate_regression_inputs(y_true, y_pred)
+    if y_true.size < 2:
+        raise ValueError("r2_score requires at least two samples")
 
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         residual_sum_squares = np.sum((y_true - y_pred) ** 2)
