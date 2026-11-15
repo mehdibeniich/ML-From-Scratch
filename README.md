@@ -128,7 +128,7 @@ The **ml_from_scratch.metrics** module provides:
 - **Mean Absolute Error (MAE):** average of absolute prediction errors.
 - **R² score:** coefficient of determination; it can be negative when predictions are worse than the mean baseline.
 
-All three functions require non-empty, equally sized, finite target and prediction values. They raise `FloatingPointError` if a metric calculation overflows. For a constant target, **r2_score** returns 1.0 for perfect predictions and 0.0 otherwise.
+All three functions require non-empty, equally sized, finite target and prediction values. They raise `FloatingPointError` if a metric calculation overflows. **r2_score** additionally requires at least two samples. For a constant target, **r2_score** returns 1.0 for perfect predictions and 0.0 otherwise.
 
 Example:
 
