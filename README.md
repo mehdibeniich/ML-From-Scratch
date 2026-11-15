@@ -120,6 +120,18 @@ print(model.predict_proba([[0.5], [4.5]]))
 print(model.classes_)  # probability-column order
 ~~~
 
+### Decision-tree building block: Gini impurity
+
+The **gini_impurity(y)** helper measures how mixed the class labels are in a decision-tree node. A pure node has an impurity of 0.0; more evenly distributed classes produce a higher score. This is the criterion used to compare candidate classification splits.
+
+Example:
+
+~~~python
+from ml_from_scratch import gini_impurity
+
+print(gini_impurity([0, 0, 1, 1]))  # 0.5
+~~~
+
 ### Regression evaluation metrics
 
 The **ml_from_scratch.metrics** module provides:
