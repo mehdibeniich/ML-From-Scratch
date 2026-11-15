@@ -41,6 +41,11 @@ class TestRegressionMetrics(unittest.TestCase):
         with self.assertRaises(ValueError):
             r2_score([1, np.nan], [1, 2])
 
+    def test_r2_score_requires_at_least_two_samples(self):
+        with self.assertRaisesRegex(ValueError, "at least two samples"):
+            r2_score([1.0], [1.0])
+        with self.assertRaisesRegex(ValueError, "at least two samples"):
+            r2_score([1.0], [2.0])
 
     def test_overflowing_metric_calculations_raise(self):
         with self.assertRaises(FloatingPointError):
@@ -49,6 +54,7 @@ class TestRegressionMetrics(unittest.TestCase):
             mean_absolute_error([1e308], [-1e308])
         with self.assertRaises(FloatingPointError):
             r2_score([1e200, -1e200], [0.0, 0.0])
+
 
 if __name__ == "__main__":
     unittest.main()
