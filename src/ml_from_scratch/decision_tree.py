@@ -44,7 +44,9 @@ def best_split(X, y):
     strictly improves the parent impurity, return None.
 
     Ties are deterministic: the lowest feature index wins, followed by the
-    lowest threshold for that feature.
+    lowest threshold for that feature. Each feature is sorted once, then
+    class counts are updated incrementally while candidate boundaries are
+    evaluated.
     """
     raw_features = np.asarray(X)
     if np.iscomplexobj(raw_features):
@@ -71,6 +73,8 @@ def best_split(X, y):
     if parent_impurity == 0.0:
         return None
 
+    _, label_codes = np.unique(labels, return_inverse=True)
+    n_classes = int(label_codes.max()) + 1
     best = None
     best_impurity = parent_impurity
     n_samples = labels.size
@@ -79,25 +83,45 @@ def best_split(X, y):
         values = features[:, feature_index]
         order = np.argsort(values, kind="stable")
         sorted_values = values[order]
-        sorted_labels = labels[order]
+        sorted_label_codes = label_codes[order]
 
-        # Only boundaries between distinct adjacent values can form a split.
-        split_positions = np.flatnonzero(sorted_values[:-1] < sorted_values[1:]) + 1
-        for split_position in split_positions:
+        left_counts = np.zeros(n_classes, dtype=np.int64)
+        right_counts = np.bincount(sorted_label_codes, minlength=n_classes)
+        left_square_sum = 0
+        right_square_sum = sum(int(count) ** 2 for count in right_counts)
+
+        # Move one sample at a time; evaluate only boundaries between distinct
+        # feature values so neither child can be empty.
+        for split_position in range(1, n_samples):
+            class_index = sorted_label_codes[split_position - 1]
+            left_count = int(left_counts[class_index])
+            right_count = int(right_counts[class_index])
+            left_square_sum += 2 * left_count + 1
+            right_square_sum += 1 - 2 * right_count
+            left_counts[class_index] = left_count + 1
+            right_counts[class_index] = right_count - 1
+
             left_value = sorted_values[split_position - 1]
             right_value = sorted_values[split_position]
+            if not left_value < right_value:
+                continue
+
+            left_size = split_position
+            right_size = n_samples - split_position
+            left_impurity = max(
+                0.0, 1.0 - left_square_sum / (left_size * left_size)
+            )
+            right_impurity = max(
+                0.0, 1.0 - right_square_sum / (right_size * right_size)
+            )
+            weighted_impurity = (
+                left_size * left_impurity + right_size * right_impurity
+            ) / n_samples
 
             # Halving before addition avoids overflow for opposite large values.
             threshold = left_value / 2.0 + right_value / 2.0
             if not (left_value <= threshold < right_value):
                 threshold = left_value
-
-            left_labels = sorted_labels[:split_position]
-            right_labels = sorted_labels[split_position:]
-            weighted_impurity = (
-                left_labels.size * gini_impurity(left_labels)
-                + right_labels.size * gini_impurity(right_labels)
-            ) / n_samples
 
             if weighted_impurity < best_impurity:
                 best_impurity = weighted_impurity
