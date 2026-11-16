@@ -1,6 +1,6 @@
 """Machine-learning algorithms implemented from scratch."""
 
-from .decision_tree import gini_impurity
+from .decision_tree import best_split, gini_impurity
 from .knn import KNeighborsClassifier
 from .linear_regression import LinearRegression
 from .logistic_regression import (
@@ -22,4 +22,5 @@ __all__ = [
     "mean_squared_error",
     "r2_score",
     "gini_impurity",
+    "best_split",
 ]
