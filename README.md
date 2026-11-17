@@ -13,7 +13,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 - [x] Data preprocessing and feature scaling
 - [x] Regression evaluation metrics (MSE, MAE, and R²)
 - [x] K-nearest neighbors
-- [ ] Decision trees
+- [x] Decision trees
 
 ## Implemented
 
@@ -120,22 +120,29 @@ print(model.predict_proba([[0.5], [4.5]]))
 print(model.classes_)  # probability-column order
 ~~~
 
-### Decision-tree building blocks
+### Decision trees
 
-The **gini_impurity(y)** helper measures how mixed the class labels are in a node. A pure node has an impurity of 0.0; more evenly distributed classes produce a higher score.
+**DecisionTreeClassifier** builds a recursive binary classification tree using Gini impurity.
 
-The **best_split(X, y)** helper searches each feature's distinct-value boundaries and returns the feature index, threshold, and weighted child-node Gini impurity for the best split. Samples at or below the threshold go left; larger values go right. It returns **None** when no split improves the parent node. Ties prefer the lowest feature index, then the lowest threshold.
+- **fit(X, y):** validates the training data and recursively builds the tree.
+- **predict(X):** traverses the fitted tree and returns one class label per sample. A single 1D sample is also accepted.
+- **max_depth:** optionally limits the number of splits from the root. The default, `None`, grows until nodes are pure or no improving split remains.
+- **min_samples_split:** minimum number of samples required before a node is considered for splitting (default: 2).
+- **classes_** contains the sorted class labels; majority-class ties are resolved by that order.
+
+The lower-level **gini_impurity(y)** helper measures how mixed the class labels are in a node. The **best_split(X, y)** helper returns the feature index, threshold, and weighted child-node Gini impurity for the best split. Samples at or below the threshold go left; larger values go right. It returns **None** when no split improves the parent node.
 
 Example:
 
 ~~~python
-from ml_from_scratch import best_split, gini_impurity
+from ml_from_scratch import DecisionTreeClassifier
 
-print(gini_impurity([0, 0, 1, 1]))  # 0.5
+X = [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]]
+y = ["low", "low", "middle", "middle", "high", "high"]
 
-X = [[0.0], [1.0], [2.0], [3.0]]
-y = [0, 0, 1, 1]
-print(best_split(X, y))  # (0, 1.5, 0.0)
+model = DecisionTreeClassifier(max_depth=3)
+model.fit(X, y)
+print(model.predict([[0.5], [2.5], [4.5]]))
 ~~~
 
 ### Regression evaluation metrics
