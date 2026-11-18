@@ -3,10 +3,49 @@ import unittest
 import numpy as np
 
 from ml_from_scratch.metrics import (
+    accuracy_score,
     mean_absolute_error,
     mean_squared_error,
     r2_score,
 )
+
+
+class TestClassificationMetrics(unittest.TestCase):
+    def test_accuracy_is_one_for_perfect_predictions(self):
+        self.assertEqual(accuracy_score([0, 1, 2], [0, 1, 2]), 1.0)
+
+    def test_accuracy_supports_string_multiclass_labels(self):
+        self.assertAlmostEqual(
+            accuracy_score(["cat", "dog", "bird"], ["cat", "bird", "bird"]),
+            2 / 3,
+        )
+
+    def test_accuracy_compares_mixed_label_types_without_coercion(self):
+        self.assertEqual(accuracy_score([1, "1"], ["1", "1"]), 0.5)
+
+    def test_accuracy_rejects_empty_mismatched_and_non_1d_inputs(self):
+        invalid_cases = (
+            ([], []),
+            ([0, 1], [0]),
+            ([[0], [1]], [0, 1]),
+            ([0, 1], [[0], [1]]),
+        )
+        for y_true, y_pred in invalid_cases:
+            with self.subTest(y_true=y_true, y_pred=y_pred):
+                with self.assertRaises(ValueError):
+                    accuracy_score(y_true, y_pred)
+
+    def test_accuracy_rejects_missing_or_non_finite_labels(self):
+        invalid_cases = (
+            ([0, None], [0, 1]),
+            ([0.0, np.nan], [0.0, 1.0]),
+            ([0.0, np.inf], [0.0, 1.0]),
+            ([0, 1], [0, None]),
+        )
+        for y_true, y_pred in invalid_cases:
+            with self.subTest(y_true=y_true, y_pred=y_pred):
+                with self.assertRaises(ValueError):
+                    accuracy_score(y_true, y_pred)
 
 
 class TestRegressionMetrics(unittest.TestCase):

@@ -9,7 +9,7 @@ from .logistic_regression import (
     binary_cross_entropy_with_logits,
     sigmoid,
 )
-from .metrics import mean_absolute_error, mean_squared_error, r2_score
+from .metrics import accuracy_score, mean_absolute_error, mean_squared_error, r2_score
 from .standard_scaler import StandardScaler
 
 __all__ = [
@@ -20,6 +20,7 @@ __all__ = [
     "StandardScaler",
     "sigmoid",
     "binary_cross_entropy_with_logits",
+    "accuracy_score",
     "mean_absolute_error",
     "mean_squared_error",
     "r2_score",

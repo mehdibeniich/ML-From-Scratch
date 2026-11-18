@@ -147,6 +147,21 @@ print(model.predict_proba([[0.5], [2.5], [4.5]]))
 print(model.predict([[0.5], [2.5], [4.5]]))
 ~~~
 
+### Classification evaluation metric
+
+**accuracy_score(y_true, y_pred)** returns the fraction of predicted class labels that match the true labels. It supports numeric and string labels, including multiclass targets, and requires non-empty, equally sized 1D arrays without missing or non-finite labels.
+
+Example:
+
+~~~python
+from ml_from_scratch import accuracy_score
+
+y_true = ["cat", "dog", "bird"]
+y_pred = ["cat", "bird", "bird"]
+
+print(accuracy_score(y_true, y_pred))  # 0.666...
+~~~
+
 ### Regression evaluation metrics
 
 The **ml_from_scratch.metrics** module provides:

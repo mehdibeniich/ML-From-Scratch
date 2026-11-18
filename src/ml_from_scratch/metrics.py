@@ -1,6 +1,45 @@
-"""Regression metrics implemented with NumPy and overflow checks."""
+"""Regression and classification metrics implemented with NumPy."""
 
 import numpy as np
+
+
+def _validate_classification_inputs(y_true, y_pred):
+    """Validate equally sized 1D arrays of non-missing scalar class labels."""
+    try:
+        y_true = np.asarray(y_true, dtype=object)
+        y_pred = np.asarray(y_pred, dtype=object)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("y_true and y_pred must be 1D label arrays") from exc
+
+    if y_true.ndim != 1 or y_pred.ndim != 1:
+        raise ValueError("y_true and y_pred must be 1D label arrays")
+    if y_true.size == 0:
+        raise ValueError("y_true and y_pred cannot be empty")
+    if y_true.shape != y_pred.shape:
+        raise ValueError("y_true and y_pred must contain the same number of labels")
+
+    for labels in (y_true, y_pred):
+        for label in labels:
+            if label is None:
+                raise ValueError("class labels cannot contain missing values")
+            try:
+                finite = np.isfinite(label)
+            except TypeError:
+                continue
+            if np.ndim(finite) == 0 and not bool(finite):
+                raise ValueError("class labels must be finite")
+
+    return y_true, y_pred
+
+
+def accuracy_score(y_true, y_pred):
+    """Return the fraction of class labels predicted correctly."""
+    y_true, y_pred = _validate_classification_inputs(y_true, y_pred)
+    try:
+        matches = np.equal(y_true, y_pred)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("class labels must support equality comparison") from exc
+    return float(np.count_nonzero(matches) / y_true.size)
 
 
 def _validate_regression_inputs(y_true, y_pred):
