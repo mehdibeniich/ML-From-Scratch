@@ -15,6 +15,7 @@ class TestPublicAPI(unittest.TestCase):
             "StandardScaler",
             "sigmoid",
             "binary_cross_entropy_with_logits",
+            "accuracy_score",
             "mean_absolute_error",
             "mean_squared_error",
             "r2_score",
