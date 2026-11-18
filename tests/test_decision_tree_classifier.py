@@ -90,5 +90,54 @@ class TestDecisionTreeClassifier(unittest.TestCase):
         np.testing.assert_array_equal(model.predict(self.X), predictions_before)
 
 
+    def test_predict_proba_returns_leaf_class_frequencies(self):
+        X = [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]]
+        y = ["A", "A", "B", "B", "A", "B"]
+        model = DecisionTreeClassifier(max_depth=1).fit(X, y)
+
+        probabilities = model.predict_proba([[0.5], [4.5]])
+
+        self.assertEqual(model.classes_.tolist(), ["A", "B"])
+        np.testing.assert_allclose(
+            probabilities,
+            [[1.0, 0.0], [0.25, 0.75]],
+        )
+        np.testing.assert_allclose(probabilities.sum(axis=1), 1.0)
+        np.testing.assert_array_equal(model.predict([[0.5], [4.5]]), ["A", "B"])
+
+    def test_predict_proba_uses_global_class_order_and_root_leaf_prior(self):
+        model = DecisionTreeClassifier(max_depth=0).fit(
+            [[0.0], [1.0], [2.0], [3.0]], ["z", "a", "z", "a"]
+        )
+
+        self.assertEqual(model.classes_.tolist(), ["a", "z"])
+        np.testing.assert_allclose(
+            model.predict_proba([[0.0], [3.0]]),
+            [[0.5, 0.5], [0.5, 0.5]],
+        )
+        np.testing.assert_array_equal(model.predict([[0.0]]), ["a"])
+
+    def test_predict_proba_returns_one_hot_for_pure_leaves(self):
+        model = DecisionTreeClassifier().fit(self.X, self.y)
+        probabilities = model.predict_proba(self.X)
+
+        self.assertEqual(probabilities.shape, (self.X.shape[0], 3))
+        np.testing.assert_allclose(probabilities.sum(axis=1), 1.0)
+        np.testing.assert_array_equal(
+            probabilities,
+            np.eye(3)[[1, 1, 2, 2, 0, 0]],
+        )
+
+    def test_predict_proba_rejects_unfitted_and_invalid_inputs(self):
+        with self.assertRaises(RuntimeError):
+            DecisionTreeClassifier().predict_proba([[0.0]])
+
+        model = DecisionTreeClassifier().fit(self.X, self.y)
+        for X in ([[1.0, 2.0]], np.empty((0, 1)), [[np.nan]], [[np.inf]]):
+            with self.subTest(X=X):
+                with self.assertRaises(ValueError):
+                    model.predict_proba(X)
+
+
 if __name__ == "__main__":
     unittest.main()

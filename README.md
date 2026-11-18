@@ -126,6 +126,7 @@ print(model.classes_)  # probability-column order
 
 - **fit(X, y):** validates the training data and recursively builds the tree.
 - **predict(X):** traverses the fitted tree and returns one class label per sample. A single 1D sample is also accepted.
+- **predict_proba(X):** returns the class frequencies in each reached leaf, with columns ordered by sorted `classes_`. These empirical frequencies are not probability-calibrated.
 - **max_depth:** optionally limits the number of splits from the root. The default, `None`, grows until nodes are pure or no improving split remains.
 - **min_samples_split:** minimum number of samples required before a node is considered for splitting (default: 2).
 - **classes_** contains the sorted class labels; majority-class ties are resolved by that order.
@@ -142,6 +143,7 @@ y = ["low", "low", "middle", "middle", "high", "high"]
 
 model = DecisionTreeClassifier(max_depth=3)
 model.fit(X, y)
+print(model.predict_proba([[0.5], [2.5], [4.5]]))
 print(model.predict([[0.5], [2.5], [4.5]]))
 ~~~
 

@@ -64,26 +64,38 @@ class DecisionTreeClassifier:
         gini_impurity(labels)
         classes = np.unique(labels)
 
-        def build_node(sample_indices, depth):
+        def make_leaf(sample_indices):
             node_labels = labels[sample_indices]
             node_classes, counts = np.unique(node_labels, return_counts=True)
             prediction = node_classes[int(np.argmax(counts))]
+            probabilities = np.zeros(classes.size, dtype=float)
+            probabilities[np.searchsorted(classes, node_classes)] = (
+                counts / sample_indices.size
+            )
+            return {
+                "prediction": prediction,
+                "probabilities": probabilities,
+            }
+
+        def build_node(sample_indices, depth):
+            leaf = make_leaf(sample_indices)
+            node_classes = np.unique(labels[sample_indices])
 
             if (
                 node_classes.size == 1
                 or sample_indices.size < self.min_samples_split
                 or (self.max_depth is not None and depth >= self.max_depth)
             ):
-                return {"prediction": prediction}
+                return leaf
 
-            split = best_split(features[sample_indices], node_labels)
+            split = best_split(features[sample_indices], labels[sample_indices])
             if split is None:
-                return {"prediction": prediction}
+                return leaf
 
             feature_index, threshold, _ = split
             left_mask = features[sample_indices, feature_index] <= threshold
             if not np.any(left_mask) or np.all(left_mask):
-                return {"prediction": prediction}
+                return leaf
 
             return {
                 "feature_index": feature_index,
@@ -122,6 +134,22 @@ class DecisionTreeClassifier:
         if not np.all(np.isfinite(features)):
             raise ValueError("X must contain only finite values")
         return features
+
+    def predict_proba(self, X):
+        """Return leaf class frequencies with columns ordered by ``classes_``."""
+        features = self._validated_features(X)
+        probabilities = []
+
+        for sample in features:
+            node = self.tree_
+            while "prediction" not in node:
+                if sample[node["feature_index"]] <= node["threshold"]:
+                    node = node["left"]
+                else:
+                    node = node["right"]
+            probabilities.append(node["probabilities"])
+
+        return np.asarray(probabilities, dtype=float)
 
     def predict(self, X):
         """Predict one class label for each input sample."""
