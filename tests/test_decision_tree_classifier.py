@@ -80,13 +80,15 @@ class TestDecisionTreeClassifier(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     model.predict(X)
 
-    def test_failed_refit_preserves_previous_tree(self):
+    def test_failed_refit_preserves_previous_tree_and_importances(self):
         model = DecisionTreeClassifier().fit(self.X, self.y)
         predictions_before = model.predict(self.X)
         tree_before = model.tree_
+        importances_before = model.feature_importances_.copy()
         with self.assertRaises(ValueError):
             model.fit([[0.0], [1.0]], [0])
         self.assertIs(model.tree_, tree_before)
+        np.testing.assert_array_equal(model.feature_importances_, importances_before)
         np.testing.assert_array_equal(model.predict(self.X), predictions_before)
 
 
@@ -137,6 +139,34 @@ class TestDecisionTreeClassifier(unittest.TestCase):
             with self.subTest(X=X):
                 with self.assertRaises(ValueError):
                     model.predict_proba(X)
+
+
+    def test_feature_importances_identify_informative_feature(self):
+        X = np.array([
+            [0.0, 10.0], [1.0, 10.0], [2.0, 10.0],
+            [3.0, 10.0], [4.0, 10.0], [5.0, 10.0],
+        ])
+        y = np.array([0, 0, 0, 1, 1, 1])
+        model = DecisionTreeClassifier().fit(X, y)
+
+        np.testing.assert_allclose(model.feature_importances_, [1.0, 0.0])
+        self.assertAlmostEqual(float(model.feature_importances_.sum()), 1.0)
+
+    def test_feature_importances_accumulate_weighted_decreases_across_tree(self):
+        X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]
+        y = [0, 1, 1, 1]
+        model = DecisionTreeClassifier().fit(X, y)
+
+        np.testing.assert_allclose(
+            model.feature_importances_, [1.0 / 3.0, 2.0 / 3.0]
+        )
+
+    def test_feature_importances_are_zero_when_tree_has_no_split(self):
+        model = DecisionTreeClassifier(max_depth=0).fit(
+            [[0.0, 1.0], [1.0, 2.0], [2.0, 3.0]], [0, 1, 0]
+        )
+
+        np.testing.assert_array_equal(model.feature_importances_, [0.0, 0.0])
 
 
 if __name__ == "__main__":

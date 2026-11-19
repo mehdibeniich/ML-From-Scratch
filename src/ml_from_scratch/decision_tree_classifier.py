@@ -38,6 +38,7 @@ class DecisionTreeClassifier:
         self.tree_ = None
         self.classes_ = None
         self.n_features_in_ = None
+        self.feature_importances_ = None
 
     def fit(self, X, y):
         """Build the tree from a finite 2D feature array and 1D labels."""
@@ -63,6 +64,8 @@ class DecisionTreeClassifier:
             raise ValueError("X and y must contain the same number of samples")
         gini_impurity(labels)
         classes = np.unique(labels)
+        feature_importances = np.zeros(features.shape[1], dtype=float)
+        n_training_samples = features.shape[0]
 
         def make_leaf(sample_indices):
             node_labels = labels[sample_indices]
@@ -92,10 +95,16 @@ class DecisionTreeClassifier:
             if split is None:
                 return leaf
 
-            feature_index, threshold, _ = split
+            feature_index, threshold, weighted_child_impurity = split
             left_mask = features[sample_indices, feature_index] <= threshold
             if not np.any(left_mask) or np.all(left_mask):
                 return leaf
+
+            node_impurity = gini_impurity(labels[sample_indices])
+            impurity_decrease = max(0.0, node_impurity - weighted_child_impurity)
+            feature_importances[feature_index] += (
+                sample_indices.size / n_training_samples
+            ) * impurity_decrease
 
             return {
                 "feature_index": feature_index,
@@ -106,9 +115,14 @@ class DecisionTreeClassifier:
 
         # Assign only after the entire tree has been built successfully.
         tree = build_node(np.arange(features.shape[0]), 0)
+        total_importance = feature_importances.sum()
+        if total_importance > 0.0:
+            feature_importances /= total_importance
+
         self.tree_ = tree
         self.classes_ = classes
         self.n_features_in_ = features.shape[1]
+        self.feature_importances_ = feature_importances
         return self
 
     def _validated_features(self, X):
