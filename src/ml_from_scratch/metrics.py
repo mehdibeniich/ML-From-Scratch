@@ -42,6 +42,63 @@ def accuracy_score(y_true, y_pred):
     return float(np.count_nonzero(matches) / y_true.size)
 
 
+def _labels_equal(left, right):
+    """Compare two scalar class labels without coercing their types."""
+    try:
+        result = left == right
+    except (TypeError, ValueError) as exc:
+        raise ValueError("class labels must support equality comparison") from exc
+    if np.ndim(result) != 0:
+        raise ValueError("class labels must be scalar values")
+    return bool(result)
+
+
+def _find_label_index(value, labels):
+    """Return the index of a matching label, or -1 when it is absent."""
+    for index, label in enumerate(labels):
+        if _labels_equal(value, label):
+            return index
+    return -1
+
+
+def confusion_matrix(y_true, y_pred, labels=None):
+    """Count true/predicted class pairs, with true classes on rows.
+
+    If labels is omitted, labels are sorted when mutually comparable;
+    otherwise their first-occurrence order across y_true then y_pred is used.
+    An explicit labels sequence fixes both matrix dimensions and their order,
+    and must include every observed class.
+    """
+    y_true, y_pred = _validate_classification_inputs(y_true, y_pred)
+
+    if labels is None:
+        class_labels = []
+        for value in np.concatenate((y_true, y_pred)):
+            if _find_label_index(value, class_labels) == -1:
+                class_labels.append(value)
+        try:
+            class_labels = sorted(class_labels)
+        except TypeError:
+            pass
+    else:
+        class_labels, _ = _validate_classification_inputs(labels, labels)
+        for index, label in enumerate(class_labels):
+            if _find_label_index(label, class_labels[:index]) != -1:
+                raise ValueError("labels must not contain duplicates")
+
+    for value in np.concatenate((y_true, y_pred)):
+        if _find_label_index(value, class_labels) == -1:
+            raise ValueError("labels must include every class in y_true and y_pred")
+
+    matrix = np.zeros((len(class_labels), len(class_labels)), dtype=np.int64)
+    for true_label, predicted_label in zip(y_true, y_pred):
+        row = _find_label_index(true_label, class_labels)
+        column = _find_label_index(predicted_label, class_labels)
+        matrix[row, column] += 1
+
+    return matrix
+
+
 def _validate_regression_inputs(y_true, y_pred):
     """Convert targets and predictions to finite, equally sized 1D arrays."""
     y_true = np.asarray(y_true, dtype=float).reshape(-1)

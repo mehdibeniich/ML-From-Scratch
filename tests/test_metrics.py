@@ -4,6 +4,7 @@ import numpy as np
 
 from ml_from_scratch.metrics import (
     accuracy_score,
+    confusion_matrix,
     mean_absolute_error,
     mean_squared_error,
     r2_score,
@@ -46,6 +47,55 @@ class TestClassificationMetrics(unittest.TestCase):
             with self.subTest(y_true=y_true, y_pred=y_pred):
                 with self.assertRaises(ValueError):
                     accuracy_score(y_true, y_pred)
+
+    def test_confusion_matrix_binary_counts_true_rows_and_predicted_columns(self):
+        matrix = confusion_matrix(
+            [0, 0, 1, 1],
+            [0, 1, 0, 1],
+            labels=[0, 1],
+        )
+        np.testing.assert_array_equal(matrix, [[1, 1], [1, 1]])
+
+    def test_confusion_matrix_sorts_comparable_multiclass_labels(self):
+        matrix = confusion_matrix(
+            ["dog", "cat", "bird", "dog"],
+            ["cat", "cat", "dog", "dog"],
+        )
+        np.testing.assert_array_equal(
+            matrix,
+            [[0, 0, 1], [0, 1, 0], [0, 1, 1]],
+        )
+
+    def test_confusion_matrix_preserves_explicit_label_order(self):
+        matrix = confusion_matrix(
+            [0, 1, 2],
+            [1, 1, 0],
+            labels=[2, 0, 1],
+        )
+        np.testing.assert_array_equal(
+            matrix,
+            [[0, 1, 0], [0, 0, 1], [0, 0, 1]],
+        )
+
+    def test_confusion_matrix_handles_mixed_label_types_without_coercion(self):
+        matrix = confusion_matrix([1, "a", 1], ["a", "a", 1])
+        np.testing.assert_array_equal(matrix, [[1, 1], [0, 1]])
+
+    def test_confusion_matrix_rejects_invalid_or_incomplete_labels(self):
+        invalid_labels = (
+            [],
+            [0, 0],
+            [[0], [1]],
+            [0, None],
+            [0, np.nan],
+        )
+        for labels in invalid_labels:
+            with self.subTest(labels=labels):
+                with self.assertRaises(ValueError):
+                    confusion_matrix([0, 1], [0, 1], labels=labels)
+
+        with self.assertRaisesRegex(ValueError, "include every class"):
+            confusion_matrix([0, 1], [0, 2], labels=[0, 1])
 
 
 class TestRegressionMetrics(unittest.TestCase):

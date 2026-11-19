@@ -16,6 +16,7 @@ class TestPublicAPI(unittest.TestCase):
             "sigmoid",
             "binary_cross_entropy_with_logits",
             "accuracy_score",
+            "confusion_matrix",
             "mean_absolute_error",
             "mean_squared_error",
             "r2_score",
