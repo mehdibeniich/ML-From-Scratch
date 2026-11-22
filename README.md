@@ -148,16 +148,18 @@ print(model.predict_proba([[0.5], [2.5], [4.5]]))
 print(model.predict([[0.5], [2.5], [4.5]]))
 ~~~
 
-### Classification evaluation metric
+### Classification evaluation metrics
 
 **accuracy_score(y_true, y_pred)** returns the fraction of predicted class labels that match the true labels. It supports numeric and string labels, including multiclass targets, and requires non-empty, equally sized 1D arrays without missing or non-finite labels.
 
 **confusion_matrix(y_true, y_pred, labels=None)** returns an integer matrix with true classes on rows and predicted classes on columns. By default, comparable labels are sorted; mixed, non-comparable label types retain first-occurrence order. Pass `labels` to choose an explicit order or include classes with zero observations. Every class present in the inputs must appear in an explicit `labels` sequence.
 
+**precision_score**, **recall_score**, and **f1_score** support binary, micro, macro, weighted, and per-class (`average=None`) output. Binary scoring uses `pos_label` (default `1`); multiclass scoring should select an averaging strategy. `zero_division` controls the value used for a zero denominator. See [the classification metrics guide](docs/classification_metrics.md) and run `PYTHONPATH=src python examples/classification_metrics_demo.py` for a complete multiclass example.
+
 Example:
 
 ~~~python
-from ml_from_scratch import accuracy_score
+from ml_from_scratch import accuracy_score, confusion_matrix
 
 y_true = ["cat", "dog", "bird"]
 y_pred = ["cat", "bird", "bird"]
