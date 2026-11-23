@@ -189,6 +189,20 @@ Run the complete multiclass example with
 See [the Gaussian Naive Bayes guide](docs/gaussian_naive_bayes.md) for the
 math, API, smoothing behavior, and input validation details.
 
+### Randomized decision-tree splits
+
+DecisionTreeClassifier also supports random candidate-feature selection at each
+node, which is the tree-level building block for ensemble methods.
+
+- max_features: None (all features), "sqrt", "log2", a positive integer, or
+  a fraction in (0, 1]. Fractions select floor(fraction * n_features), with
+  at least one feature.
+- random_state: a non-negative integer seed or None for reproducible split
+  feature selection.
+
+Use max_features="sqrt" with a fixed random_state to experiment with feature
+randomization. The default None preserves deterministic full-feature splitting.
+
 ### Classification evaluation metrics
 
 **accuracy_score(y_true, y_pred)** returns the fraction of predicted class labels that match the true labels. It supports numeric and string labels, including multiclass targets, and requires non-empty, equally sized 1D arrays without missing or non-finite labels.

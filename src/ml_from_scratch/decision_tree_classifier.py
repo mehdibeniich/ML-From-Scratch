@@ -19,7 +19,7 @@ class DecisionTreeClassifier:
         for splitting.
     """
 
-    def __init__(self, max_depth=None, min_samples_split=2):
+    def __init__(self, max_depth=None, min_samples_split=2, max_features=None, random_state=None):
         if max_depth is not None and (
             isinstance(max_depth, (bool, np.bool_))
             or not isinstance(max_depth, (int, np.integer))
@@ -33,8 +33,30 @@ class DecisionTreeClassifier:
         ):
             raise ValueError("min_samples_split must be an integer of at least 2")
 
+        if max_features is not None and not (
+            (isinstance(max_features, str) and max_features in ("sqrt", "log2"))
+            or (
+                isinstance(max_features, (int, np.integer))
+                and not isinstance(max_features, (bool, np.bool_))
+                and max_features >= 1
+            )
+            or (
+                isinstance(max_features, (float, np.floating))
+                and 0.0 < max_features <= 1.0
+            )
+        ):
+            raise ValueError("max_features must be None, sqrt/log2, a positive integer, or a fraction in (0, 1]")
+        if random_state is not None and (
+            isinstance(random_state, (bool, np.bool_))
+            or not isinstance(random_state, (int, np.integer))
+            or random_state < 0
+        ):
+            raise ValueError("random_state must be a non-negative integer or None")
+
         self.max_depth = None if max_depth is None else int(max_depth)
         self.min_samples_split = int(min_samples_split)
+        self.max_features = max_features
+        self.random_state = None if random_state is None else int(random_state)
         self.tree_ = None
         self.classes_ = None
         self.n_features_in_ = None
@@ -66,6 +88,9 @@ class DecisionTreeClassifier:
         classes = np.unique(labels)
         feature_importances = np.zeros(features.shape[1], dtype=float)
         n_training_samples = features.shape[0]
+        rng = np.random.default_rng(self.random_state)
+        if isinstance(self.max_features, (int, np.integer)) and self.max_features > features.shape[1]:
+            raise ValueError("max_features cannot exceed the number of input features")
 
         def make_leaf(sample_indices):
             node_labels = labels[sample_indices]
@@ -91,7 +116,24 @@ class DecisionTreeClassifier:
             ):
                 return leaf
 
-            split = best_split(features[sample_indices], labels[sample_indices])
+            if self.max_features is None:
+                n_selected_features = features.shape[1]
+            elif self.max_features == "sqrt":
+                n_selected_features = max(1, int(np.sqrt(features.shape[1])))
+            elif self.max_features == "log2":
+                n_selected_features = max(1, int(np.log2(features.shape[1])))
+            elif isinstance(self.max_features, (int, np.integer)):
+                n_selected_features = int(self.max_features)
+            else:
+                n_selected_features = max(1, int(self.max_features * features.shape[1]))
+            selected_features = rng.choice(
+                features.shape[1], size=n_selected_features, replace=False
+            )
+            split = best_split(
+                features[sample_indices],
+                labels[sample_indices],
+                feature_indices=selected_features,
+            )
             if split is None:
                 return leaf
 

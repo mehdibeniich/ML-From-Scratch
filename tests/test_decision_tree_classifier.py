@@ -169,5 +169,35 @@ class TestDecisionTreeClassifier(unittest.TestCase):
         np.testing.assert_array_equal(model.feature_importances_, [0.0, 0.0])
 
 
+    def test_random_feature_selection_is_seeded_and_limits_candidates(self):
+        X = np.array([
+            [0.0, 10.0, 100.0], [1.0, 11.0, 101.0],
+            [2.0, 12.0, 102.0], [3.0, 13.0, 103.0],
+            [4.0, 14.0, 104.0], [5.0, 15.0, 105.0],
+        ])
+        y = np.array([0, 0, 0, 1, 1, 1])
+        first = DecisionTreeClassifier(max_features=1, random_state=8).fit(X, y)
+        second = DecisionTreeClassifier(max_features=1, random_state=8).fit(X, y)
+        self.assertEqual(first.tree_, second.tree_)
+        self.assertEqual(first.feature_importances_.shape, (3,))
+
+    def test_rejects_invalid_random_feature_parameters(self):
+        for max_features in (0, -1, 1.5, 1.1, True, "bad"):
+            with self.subTest(max_features=max_features):
+                with self.assertRaises(ValueError):
+                    DecisionTreeClassifier(max_features=max_features)
+        with self.assertRaises(ValueError):
+            DecisionTreeClassifier(max_features=4).fit([[0.0, 1.0]], [0])
+
+    def test_best_split_can_restrict_candidate_features(self):
+        from ml_from_scratch import best_split
+        X = [[0.0, 10.0], [1.0, 11.0], [2.0, 12.0], [3.0, 13.0]]
+        y = [0, 0, 1, 1]
+        split = best_split(X, y, feature_indices=np.array([1]))
+        self.assertEqual(split[0], 1)
+        with self.assertRaises(ValueError):
+            best_split(X, y, feature_indices=np.array([1, 1]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -35,7 +35,7 @@ def gini_impurity(y):
     return float(max(0.0, 1.0 - np.sum(probabilities ** 2)))
 
 
-def best_split(X, y):
+def best_split(X, y, feature_indices=None):
     """Find the best binary split using weighted child-node Gini impurity.
 
     Samples with a feature value less than or equal to the returned threshold
@@ -63,6 +63,20 @@ def best_split(X, y):
     if not np.all(np.isfinite(features)):
         raise ValueError("X must contain only finite values")
 
+    if feature_indices is None:
+        selected_features = np.arange(features.shape[1])
+    else:
+        selected_features = np.asarray(feature_indices)
+        if (
+            selected_features.ndim != 1
+            or selected_features.size == 0
+            or not np.issubdtype(selected_features.dtype, np.integer)
+            or np.any(selected_features < 0)
+            or np.any(selected_features >= features.shape[1])
+            or np.unique(selected_features).size != selected_features.size
+        ):
+            raise ValueError("feature_indices must be unique valid feature indices")
+
     labels = np.asarray(y)
     if labels.ndim != 1:
         raise ValueError("y must be a 1D array")
@@ -79,7 +93,7 @@ def best_split(X, y):
     best_impurity = parent_impurity
     n_samples = labels.size
 
-    for feature_index in range(features.shape[1]):
+    for feature_index in selected_features:
         values = features[:, feature_index]
         order = np.argsort(values, kind="stable")
         sorted_values = values[order]
