@@ -14,6 +14,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 - [x] Regression evaluation metrics (MSE, MAE, and R²)
 - [x] K-nearest neighbors
 - [x] Decision trees
+- [x] Gaussian Naive Bayes
 
 ## Implemented
 
@@ -147,6 +148,46 @@ model.fit(X, y)
 print(model.predict_proba([[0.5], [2.5], [4.5]]))
 print(model.predict([[0.5], [2.5], [4.5]]))
 ~~~
+
+### Gaussian Naive Bayes
+
+**GaussianNB** is a multiclass classifier that models each numeric feature
+with a Gaussian distribution conditioned on the class. It combines class
+priors with feature log-likelihoods and normalizes the scores to produce
+stable posterior probabilities.
+
+- **fit(X, y):** estimates class counts, class priors, feature means, and
+  class-feature variances.
+- **predict(X):** returns the most likely class for each sample.
+- **predict_proba(X):** returns normalized class probabilities, with columns
+  ordered by `classes_`.
+- **var_smoothing:** adds a global variance-scaled floor to prevent zero
+  variance for constant features (default: `1e-9`).
+- **classes_**, **class_count_**, **class_prior_**, **theta_**, and **var_**
+  expose the learned class order and statistics.
+
+The implementation evaluates Gaussian likelihoods in log space and uses
+stable probability normalization. It supports numeric and string labels,
+rejects missing labels and invalid feature arrays, and preserves an existing
+fitted model if a refit fails.
+
+Example:
+
+~~~python
+from ml_from_scratch import GaussianNB
+
+X_train = [[-2.0], [-1.5], [-1.0], [1.0], [1.5], [2.0]]
+y_train = ["left", "left", "left", "right", "right", "right"]
+
+model = GaussianNB(var_smoothing=1e-9).fit(X_train, y_train)
+print(model.predict([[1.8]]))
+print(model.predict_proba([[1.8]]))
+~~~
+
+Run the complete multiclass example with
+`PYTHONPATH=src python examples/gaussian_naive_bayes_demo.py`.
+See [the Gaussian Naive Bayes guide](docs/gaussian_naive_bayes.md) for the
+math, API, smoothing behavior, and input validation details.
 
 ### Classification evaluation metrics
 
