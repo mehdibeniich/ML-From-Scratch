@@ -3,6 +3,7 @@
 from .classification_metrics import f1_score, precision_score, recall_score
 from .decision_tree import best_split, gini_impurity
 from .decision_tree_classifier import DecisionTreeClassifier
+from .gaussian_naive_bayes import GaussianNB
 from .knn import KNeighborsClassifier
 from .linear_regression import LinearRegression
 from .logistic_regression import (
@@ -24,6 +25,7 @@ __all__ = [
     "LogisticRegression",
     "KNeighborsClassifier",
     "DecisionTreeClassifier",
+    "GaussianNB",
     "StandardScaler",
     "sigmoid",
     "binary_cross_entropy_with_logits",
