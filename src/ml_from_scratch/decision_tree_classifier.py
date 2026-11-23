@@ -17,6 +17,11 @@ class DecisionTreeClassifier:
     min_samples_split : int, default=2
         Minimum number of samples a node must contain before it is considered
         for splitting.
+    max_features : None, str, int, or float, default=None
+        Number of candidate features sampled at each split. Supports "sqrt",
+        "log2", a positive integer, a fraction in (0, 1], or None for all.
+    random_state : int or None, default=None
+        Non-negative seed for reproducible candidate-feature sampling.
     """
 
     def __init__(self, max_depth=None, min_samples_split=2, max_features=None, random_state=None):
