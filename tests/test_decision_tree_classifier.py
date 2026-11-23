@@ -213,6 +213,19 @@ class TestDecisionTreeClassifier(unittest.TestCase):
         with self.assertRaises(ValueError):
             best_split(X, y, feature_indices=np.array([1, 1]))
 
+    def test_supported_max_features_modes_fit_and_predict(self):
+        X = [[0.0, 10.0, 100.0], [1.0, 11.0, 101.0],
+             [2.0, 12.0, 102.0], [3.0, 13.0, 103.0],
+             [4.0, 14.0, 104.0], [5.0, 15.0, 105.0]]
+        y = [0, 0, 0, 1, 1, 1]
+        for setting in ("sqrt", "log2", 1, 0.5, None):
+            with self.subTest(max_features=setting):
+                model = DecisionTreeClassifier(
+                    max_features=setting, random_state=17
+                ).fit(X, y)
+                self.assertEqual(model.predict(X).shape, (len(y),))
+                self.assertEqual(model.feature_importances_.shape, (3,))
+
 
 if __name__ == "__main__":
     unittest.main()
