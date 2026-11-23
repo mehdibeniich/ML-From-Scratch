@@ -178,7 +178,22 @@ class TestDecisionTreeClassifier(unittest.TestCase):
         y = np.array([0, 0, 0, 1, 1, 1])
         first = DecisionTreeClassifier(max_features=1, random_state=8).fit(X, y)
         second = DecisionTreeClassifier(max_features=1, random_state=8).fit(X, y)
-        self.assertEqual(first.tree_, second.tree_)
+        def flatten(node):
+            if "prediction" in node:
+                return (
+                    "leaf",
+                    node["prediction"],
+                    tuple(node["probabilities"].tolist()),
+                )
+            return (
+                "split",
+                int(node["feature_index"]),
+                float(node["threshold"]),
+                flatten(node["left"]),
+                flatten(node["right"]),
+            )
+
+        self.assertEqual(flatten(first.tree_), flatten(second.tree_))
         self.assertEqual(first.feature_importances_.shape, (3,))
 
     def test_rejects_invalid_random_feature_parameters(self):
