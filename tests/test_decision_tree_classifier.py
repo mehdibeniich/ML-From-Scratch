@@ -227,5 +227,16 @@ class TestDecisionTreeClassifier(unittest.TestCase):
                 self.assertEqual(model.feature_importances_.shape, (3,))
 
 
+    def test_best_split_tie_break_is_independent_of_feature_input_order(self):
+        from ml_from_scratch import best_split
+
+        X = [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0], [3.0, 3.0]]
+        y = [0, 0, 1, 1]
+
+        split = best_split(X, y, feature_indices=[1, 0])
+
+        self.assertEqual(split[0], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

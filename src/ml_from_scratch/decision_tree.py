@@ -77,6 +77,10 @@ def best_split(X, y, feature_indices=None):
         ):
             raise ValueError("feature_indices must be unique valid feature indices")
 
+    # Preserve the documented lowest-feature-index tie-break even when the
+    # caller supplies sampled feature indices in random order.
+    selected_features = np.sort(selected_features)
+
     labels = np.asarray(y)
     if labels.ndim != 1:
         raise ValueError("y must be a 1D array")
