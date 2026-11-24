@@ -16,8 +16,9 @@ log-likelihood:
 \]
 
 The largest score determines the predicted class. Probability output is
-normalized with a log-sum-exp style shift to avoid exponentiating large
-unscaled scores.
+normalized with a log-sum-exp style shift. The log-probability API retains
+small posterior values in log space instead of losing them to exponentiation
+underflow.
 
 ## API
 
@@ -33,6 +34,7 @@ probabilities = model.predict_proba(X_test)
 - `fit(X, y)` learns class counts, priors, feature means, and variances.
 - `predict(X)` returns one predicted label per sample.
 - `predict_proba(X)` returns probabilities with columns in `classes_` order.
+- `predict_log_proba(X)` returns normalized log probabilities in the same class order. It preserves very small class evidence even when exponentiating it in `predict_proba` underflows to zero.
 - `classes_` contains sorted labels when they can be compared; otherwise
   labels retain first-occurrence order.
 - `class_count_`, `class_prior_`, `theta_`, and `var_` expose learned

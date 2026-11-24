@@ -161,6 +161,8 @@ stable posterior probabilities.
 - **predict(X):** returns the most likely class for each sample.
 - **predict_proba(X):** returns normalized class probabilities, with columns
   ordered by `classes_`.
+- **predict_log_proba(X):** returns normalized log probabilities in the same
+  class order, preserving very small posterior evidence in log space.
 - **var_smoothing:** adds a global variance-scaled floor to prevent zero
   variance for constant features (default: `1e-9`).
 - **classes_**, **class_count_**, **class_prior_**, **theta_**, and **var_**

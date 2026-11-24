@@ -150,20 +150,38 @@ class GaussianNB:
             scores = -0.5 * (
                 log_determinants[None, :] + quadratic_terms
             ) + log_priors[None, :]
-        if np.any(np.isnan(scores)) or np.all(np.isneginf(scores), axis=1).any():
+        if (
+            np.any(np.isnan(scores))
+            or np.any(np.isposinf(scores))
+            or np.all(np.isneginf(scores), axis=1).any()
+        ):
             raise FloatingPointError(
                 "prediction produced non-finite Gaussian log probabilities"
             )
         return scores
 
-    def predict_proba(self, X):
-        """Return normalized class probabilities in classes_ order."""
+    def predict_log_proba(self, X):
+        """Return normalized log posterior probabilities in classes_ order."""
         X = self._validated_features(X)
         scores = self._joint_log_likelihood(X)
         row_max = np.max(scores, axis=1, keepdims=True)
         with np.errstate(under="ignore", invalid="ignore"):
-            exp_scores = np.exp(scores - row_max)
-            probabilities = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+            shifted_scores = scores - row_max
+            log_normalizer = row_max + np.log(
+                np.sum(np.exp(shifted_scores), axis=1, keepdims=True)
+            )
+            log_probabilities = scores - log_normalizer
+        if np.any(np.isnan(log_probabilities)):
+            raise FloatingPointError(
+                "prediction produced invalid Gaussian log probabilities"
+            )
+        return log_probabilities
+
+    def predict_proba(self, X):
+        """Return normalized class probabilities in classes_ order."""
+        log_probabilities = self.predict_log_proba(X)
+        with np.errstate(under="ignore"):
+            probabilities = np.exp(log_probabilities)
         if not np.all(np.isfinite(probabilities)):
             raise FloatingPointError("prediction produced invalid probabilities")
         return probabilities

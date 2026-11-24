@@ -27,6 +27,33 @@ class TestGaussianNB(unittest.TestCase):
         np.testing.assert_allclose(probabilities.sum(axis=1), 1.0)
         self.assertTrue(np.all((probabilities >= 0) & (probabilities <= 1)))
 
+    def test_log_probabilities_are_normalized_and_match_probabilities(self):
+        model = GaussianNB().fit(self.X, self.y)
+        samples = [[-1.8, -1.0], [1.8, 1.0]]
+        log_probabilities = model.predict_log_proba(samples)
+        probabilities = model.predict_proba(samples)
+
+        self.assertEqual(log_probabilities.shape, (2, 2))
+        np.testing.assert_allclose(
+            np.logaddexp.reduce(log_probabilities, axis=1), 0.0, atol=1e-12
+        )
+        np.testing.assert_allclose(np.exp(log_probabilities), probabilities)
+
+    def test_log_probabilities_preserve_extreme_class_evidence(self):
+        model = GaussianNB().fit(
+            [[0.0], [0.1], [1.0], [1.1]],
+            ["near-zero", "near-zero", "near-one", "near-one"],
+        )
+        log_probabilities = model.predict_log_proba([[1000.0]])
+        probabilities = model.predict_proba([[1000.0]])
+        near_zero_index = list(model.classes_).index("near-zero")
+
+        self.assertTrue(np.isfinite(log_probabilities[0, near_zero_index]))
+        self.assertEqual(probabilities[0, near_zero_index], 0.0)
+        np.testing.assert_allclose(
+            np.logaddexp.reduce(log_probabilities, axis=1), 0.0, atol=1e-12
+        )
+
     def test_estimates_class_priors_and_statistics(self):
         X = [[0.0], [2.0], [4.0], [10.0]]
         y = ["a", "a", "a", "b"]
@@ -62,6 +89,8 @@ class TestGaussianNB(unittest.TestCase):
             model.predict(self.X)
         with self.assertRaises(RuntimeError):
             model.predict_proba(self.X)
+        with self.assertRaises(RuntimeError):
+            model.predict_log_proba(self.X)
 
     def test_rejects_invalid_smoothing(self):
         for value in (-1.0, np.nan, np.inf, -np.inf, True, "invalid"):
