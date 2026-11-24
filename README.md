@@ -211,14 +211,14 @@ bootstrap samples. It averages tree probabilities in a consistent global
 class order, including when a bootstrap sample omits a rare class.
 
 - **n_estimators:** number of trees (default: 100).
-- **max_features:** candidate features per split; defaults to \`"sqrt"\`.
+- **max_features:** candidate features per split; defaults to `"sqrt"`.
 - **bootstrap:** sample training rows with replacement (default: true).
 - **random_state:** reproduces bootstrap samples and tree feature selection.
 - **predict_proba(X):** averages each tree's probabilities after aligning
-  columns to the forest's \`classes_\`.
+  columns to the forest's `classes_`.
 - **feature_importances_:** normalized aggregate Gini impurity reductions.
 
-Run \`PYTHONPATH=src python examples/random_forest_demo.py\` for a runnable
+Run `PYTHONPATH=src python examples/random_forest_demo.py` for a runnable
 multiclass example. See [the Random Forest guide](docs/random_forest_classifier.md)
 for the algorithm, API, bootstrap behavior, and edge cases.
 
