@@ -169,5 +169,74 @@ class TestDecisionTreeClassifier(unittest.TestCase):
         np.testing.assert_array_equal(model.feature_importances_, [0.0, 0.0])
 
 
+    def test_random_feature_selection_is_seeded_and_limits_candidates(self):
+        X = np.array([
+            [0.0, 10.0, 100.0], [1.0, 11.0, 101.0],
+            [2.0, 12.0, 102.0], [3.0, 13.0, 103.0],
+            [4.0, 14.0, 104.0], [5.0, 15.0, 105.0],
+        ])
+        y = np.array([0, 0, 0, 1, 1, 1])
+        first = DecisionTreeClassifier(max_features=1, random_state=8).fit(X, y)
+        second = DecisionTreeClassifier(max_features=1, random_state=8).fit(X, y)
+        def flatten(node):
+            if "prediction" in node:
+                return (
+                    "leaf",
+                    node["prediction"],
+                    tuple(node["probabilities"].tolist()),
+                )
+            return (
+                "split",
+                int(node["feature_index"]),
+                float(node["threshold"]),
+                flatten(node["left"]),
+                flatten(node["right"]),
+            )
+
+        self.assertEqual(flatten(first.tree_), flatten(second.tree_))
+        self.assertEqual(first.feature_importances_.shape, (3,))
+
+    def test_rejects_invalid_random_feature_parameters(self):
+        for max_features in (0, -1, 1.5, 1.1, True, "bad"):
+            with self.subTest(max_features=max_features):
+                with self.assertRaises(ValueError):
+                    DecisionTreeClassifier(max_features=max_features)
+        with self.assertRaises(ValueError):
+            DecisionTreeClassifier(max_features=4).fit([[0.0, 1.0]], [0])
+
+    def test_best_split_can_restrict_candidate_features(self):
+        from ml_from_scratch import best_split
+        X = [[0.0, 10.0], [1.0, 11.0], [2.0, 12.0], [3.0, 13.0]]
+        y = [0, 0, 1, 1]
+        split = best_split(X, y, feature_indices=np.array([1]))
+        self.assertEqual(split[0], 1)
+        with self.assertRaises(ValueError):
+            best_split(X, y, feature_indices=np.array([1, 1]))
+
+    def test_supported_max_features_modes_fit_and_predict(self):
+        X = [[0.0, 10.0, 100.0], [1.0, 11.0, 101.0],
+             [2.0, 12.0, 102.0], [3.0, 13.0, 103.0],
+             [4.0, 14.0, 104.0], [5.0, 15.0, 105.0]]
+        y = [0, 0, 0, 1, 1, 1]
+        for setting in ("sqrt", "log2", 1, 0.5, None):
+            with self.subTest(max_features=setting):
+                model = DecisionTreeClassifier(
+                    max_features=setting, random_state=17
+                ).fit(X, y)
+                self.assertEqual(model.predict(X).shape, (len(y),))
+                self.assertEqual(model.feature_importances_.shape, (3,))
+
+
+    def test_best_split_tie_break_is_independent_of_feature_input_order(self):
+        from ml_from_scratch import best_split
+
+        X = [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0], [3.0, 3.0]]
+        y = [0, 0, 1, 1]
+
+        split = best_split(X, y, feature_indices=[1, 0])
+
+        self.assertEqual(split[0], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

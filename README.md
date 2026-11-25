@@ -14,6 +14,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 - [x] Regression evaluation metrics (MSE, MAE, and R²)
 - [x] K-nearest neighbors
 - [x] Decision trees
+- [x] Random Forest classification
 - [x] Gaussian Naive Bayes
 
 ## Implemented
@@ -190,6 +191,38 @@ Run the complete multiclass example with
 `PYTHONPATH=src python examples/gaussian_naive_bayes_demo.py`.
 See [the Gaussian Naive Bayes guide](docs/gaussian_naive_bayes.md) for the
 math, API, smoothing behavior, and input validation details.
+
+### Randomized decision-tree splits
+
+DecisionTreeClassifier also supports random candidate-feature selection at each
+node, which is the tree-level building block for ensemble methods.
+
+- max_features: None (all features), "sqrt", "log2", a positive integer, or
+  a fraction in (0, 1]. Fractions select floor(fraction * n_features), with
+  at least one feature.
+- random_state: a non-negative integer seed or None for reproducible split
+  feature selection.
+
+Use max_features="sqrt" with a fixed random_state to experiment with feature
+randomization. The default None preserves deterministic full-feature splitting.
+
+### Random Forest
+
+**RandomForestClassifier** combines randomized decision trees trained on
+bootstrap samples. It averages tree probabilities in a consistent global
+class order, including when a bootstrap sample omits a rare class.
+
+- **n_estimators:** number of trees (default: 100).
+- **max_features:** candidate features per split; defaults to `"sqrt"`.
+- **bootstrap:** sample training rows with replacement (default: true).
+- **random_state:** reproduces bootstrap samples and tree feature selection.
+- **predict_proba(X):** averages each tree's probabilities after aligning
+  columns to the forest's `classes_`.
+- **feature_importances_:** normalized aggregate Gini impurity reductions.
+
+Run `PYTHONPATH=src python examples/random_forest_demo.py` for a runnable
+multiclass example. See [the Random Forest guide](docs/random_forest_classifier.md)
+for the algorithm, API, bootstrap behavior, and edge cases.
 
 ### Classification evaluation metrics
 

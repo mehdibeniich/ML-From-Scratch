@@ -24,3 +24,11 @@ jobs:
         env:
           PYTHONPATH: src
         run: python -m unittest discover -s tests -v
+      - name: Smoke-test runnable examples
+        env:
+          PYTHONPATH: src
+        run: |
+          for example in examples/*.py; do
+            echo "Running $example"
+            python "$example"
+          done

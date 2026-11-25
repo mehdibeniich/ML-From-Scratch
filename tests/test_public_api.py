@@ -12,6 +12,7 @@ class TestPublicAPI(unittest.TestCase):
             "LogisticRegression",
             "KNeighborsClassifier",
             "DecisionTreeClassifier",
+            "RandomForestClassifier",
             "GaussianNB",
             "StandardScaler",
             "sigmoid",
