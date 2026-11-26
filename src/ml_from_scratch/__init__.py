@@ -6,6 +6,7 @@ from .decision_tree_classifier import DecisionTreeClassifier
 from .random_forest_classifier import RandomForestClassifier
 from .gaussian_naive_bayes import GaussianNB
 from .knn import KNeighborsClassifier
+from .kmeans import KMeans
 from .linear_regression import LinearRegression
 from .logistic_regression import (
     LogisticRegression,
@@ -25,6 +26,7 @@ __all__ = [
     "LinearRegression",
     "LogisticRegression",
     "KNeighborsClassifier",
+    "KMeans",
     "DecisionTreeClassifier",
     "RandomForestClassifier",
     "GaussianNB",
