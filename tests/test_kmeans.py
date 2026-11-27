@@ -21,6 +21,13 @@ class TestKMeans(unittest.TestCase):
         self.assertEqual(model.predict([[-5.0, -5.0], [5.0, 5.0]]).shape, (2,))
         self.assertEqual(model.n_features_in_, 2)
 
+    def test_single_cluster_center_and_inertia_match_mean(self):
+        model = KMeans(1, random_state=11).fit(self.X)
+        np.testing.assert_allclose(model.cluster_centers_[0], self.X.mean(axis=0))
+        expected = np.sum((self.X - self.X.mean(axis=0)) ** 2)
+        self.assertAlmostEqual(model.inertia_, expected)
+        np.testing.assert_array_equal(model.labels_, np.zeros(len(self.X), dtype=int))
+
     def test_seed_is_reproducible_and_fit_predict_matches(self):
         a = KMeans(2, n_init=4, random_state=42).fit(self.X)
         b = KMeans(2, n_init=4, random_state=42).fit(self.X)
@@ -45,14 +52,28 @@ class TestKMeans(unittest.TestCase):
     def test_validation_and_unfitted_methods(self):
         with self.assertRaises(RuntimeError):
             KMeans(2).predict(self.X)
+        with self.assertRaises(RuntimeError):
+            KMeans(2).transform(self.X)
         for bad in (0, -1, 7, 1.5, True):
             with self.subTest(n_clusters=bad):
                 with self.assertRaises(ValueError):
                     KMeans(bad).fit(self.X)
+        for kwargs in ({"max_iter": 0}, {"n_init": 0}, {"tol": -1.0},
+                       {"tol": np.inf}):
+            with self.subTest(kwargs=kwargs):
+                with self.assertRaises(ValueError):
+                    KMeans(2, **kwargs).fit(self.X)
         for bad_X in ([1, 2], np.empty((0, 2)), [[np.nan, 0.0]], [[np.inf, 1.0]]):
             with self.subTest(X=bad_X):
                 with self.assertRaises(ValueError):
                     KMeans(2).fit(bad_X)
+
+    def test_predict_and_transform_reject_feature_mismatch(self):
+        model = KMeans(2, random_state=2).fit(self.X)
+        with self.assertRaises(ValueError):
+            model.predict([[1.0]])
+        with self.assertRaises(ValueError):
+            model.transform([[1.0]])
 
     def test_failed_refit_preserves_previous_model(self):
         model = KMeans(2, random_state=3).fit(self.X)
