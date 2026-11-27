@@ -7,6 +7,7 @@ from .random_forest_classifier import RandomForestClassifier
 from .gaussian_naive_bayes import GaussianNB
 from .knn import KNeighborsClassifier
 from .kmeans import KMeans
+from .pca import PCA
 from .linear_regression import LinearRegression
 from .logistic_regression import (
     LogisticRegression,
@@ -27,6 +28,7 @@ __all__ = [
     "LogisticRegression",
     "KNeighborsClassifier",
     "KMeans",
+    "PCA",
     "DecisionTreeClassifier",
     "RandomForestClassifier",
     "GaussianNB",

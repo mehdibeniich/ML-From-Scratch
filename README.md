@@ -17,6 +17,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 - [x] Random Forest classification
 - [x] Gaussian Naive Bayes
 - [x] K-Means clustering
+- [x] Principal component analysis (PCA)
 
 ## Implemented
 
@@ -98,6 +99,34 @@ print(X_train_scaled)
 print(X_test_scaled)
 ~~~
 
+### Principal component analysis (PCA)
+
+**PCA** is an unsupervised dimensionality-reduction method that centers data and uses SVD to learn orthogonal directions ordered by explained variance.
+
+- **PCA(n_components=None):** retain all available components.
+- **PCA(n_components=k):** retain an integer number of principal directions.
+- **PCA(n_components=0.95):** retain the smallest component count reaching 95% cumulative explained variance.
+- **fit(X), transform(X), fit_transform(X):** learn and apply the projection.
+- **inverse_transform(Z):** reconstruct approximate samples from component scores.
+- **explained_variance_ratio_** reports the variance captured by each retained component.
+
+Inputs must be finite numeric 2D arrays. PCA is sensitive to feature scales, so standardize heterogeneous features when appropriate.
+
+Example:
+
+~~~python
+import numpy as np
+from ml_from_scratch import PCA
+
+X = np.array([[1.0, 2.0], [2.0, 4.0], [3.0, 6.0], [4.0, 8.0]])
+pca = PCA(n_components=0.95)
+Z = pca.fit_transform(X)
+
+print(pca.explained_variance_ratio_)
+print(pca.inverse_transform(Z))
+~~~
+
+See [the PCA guide](docs/pca.md) for the mathematics, component-selection behavior, and edge cases.
 ### K-nearest neighbors
 
 **KNeighborsClassifier** predicts a class by majority vote among the `n_neighbors` closest training samples, using Euclidean distance.
