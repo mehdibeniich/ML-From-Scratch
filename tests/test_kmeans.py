@@ -12,11 +12,12 @@ class TestKMeans(unittest.TestCase):
             [5.0, 4.0], [4.0, 5.0], [6.0, 5.0],
         ])
 
-    def test_finds_separated_clusters_and_low_inertia(self):
+    def test_finds_separated_clusters_and_correct_inertia(self):
         model = KMeans(n_clusters=2, n_init=5, random_state=7).fit(self.X)
         self.assertEqual(model.cluster_centers_.shape, (2, 2))
         self.assertEqual(model.labels_.shape, (6,))
-        self.assertLess(model.inertia_, 5.0)
+        # Each three-point cluster contributes 8/3 squared error.
+        self.assertAlmostEqual(model.inertia_, 16.0 / 3.0)
         self.assertEqual(model.predict([[-5.0, -5.0], [5.0, 5.0]]).shape, (2,))
         self.assertEqual(model.n_features_in_, 2)
 
