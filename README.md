@@ -16,6 +16,7 @@ Learn the mathematics behind machine learning by implementing algorithms step by
 - [x] Decision trees
 - [x] Random Forest classification
 - [x] Gaussian Naive Bayes
+- [x] K-Means clustering
 
 ## Implemented
 
@@ -304,3 +305,16 @@ tests/                # unit tests
 ~~~
 
 Each algorithm includes an explanation, implementation, example, and tests.
+
+
+### K-Means clustering
+
+**KMeans** implements Lloyd's algorithm with K-Means++ initialization and multiple
+restarts. It exposes `fit`, `fit_predict`, `predict`, and `transform`, along
+with learned centers, labels, inertia, and iteration count. Empty clusters are
+repaired by placing centers at poorly represented samples, and `random_state`
+makes initialization reproducible.
+
+See **docs/kmeans.md** for algorithm details and **examples/kmeans_demo.py** for
+a runnable clustering example. K-Means uses Euclidean distance and is sensitive
+to feature scales; scale heterogeneous features before fitting.
