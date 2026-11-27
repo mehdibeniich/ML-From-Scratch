@@ -79,6 +79,7 @@ class KMeans:
                 candidates = np.flatnonzero(
                     ~np.any(np.all(X[:, None, :] == centers[:index][None, :, :],
                                  axis=2), axis=1)
+                )
                 choice = int(candidates[0]) if candidates.size else int(index % n_samples)
             else:
                 choice = int(rng.choice(n_samples, p=closest / total))
